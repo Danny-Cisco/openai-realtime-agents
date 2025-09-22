@@ -5,7 +5,13 @@ import path from "path";
 
 const filePath = path.resolve(process.cwd(), "todo.md");
 
-let clients = new Set<ReadableStreamDefaultController>();
+type SafeController = {
+  controller: ReadableStreamDefaultController<Uint8Array>;
+  closed: boolean;
+  close: () => void;
+};
+
+let clients = new Set<SafeController>();
 
 // Singleton watcher to prevent HMR duplication
 let watcher: chokidar.FSWatcher | null = null;
@@ -19,28 +25,71 @@ function initWatcher() {
   watcher.on("change", async () => {
     const stat = await fs.stat(filePath);
     const payload = JSON.stringify({ type: "changed", mtimeMs: stat.mtimeMs });
-    for (const client of clients) client.enqueue(`data: ${payload}\n\n`);
+    const encoded = new TextEncoder().encode(`data: ${payload}\n\n`);
+
+    for (const client of [...clients]) {
+      if (client.closed) continue;
+      try {
+        client.controller.enqueue(encoded);
+      } catch (err) {
+        console.warn("Stream enqueue failed. Removing client.", err);
+        client.closed = true;
+        clients.delete(client);
+      }
+    }
   });
 }
 
 export async function GET(_req: NextRequest) {
   initWatcher();
 
-  const stream = new ReadableStream({
+  const encoder = new TextEncoder();
+  let pingInterval: NodeJS.Timeout;
+
+  const stream = new ReadableStream<Uint8Array>({
     start(controller) {
-      clients.add(controller);
-
-      controller.enqueue(`data: ${JSON.stringify({ type: "hello" })}\n\n`);
-
-      const ping = setInterval(() => controller.enqueue(`: ping\n\n`), 20000);
-      return () => {
-        clearInterval(ping);
-        clients.delete(controller);
+      const client: SafeController = {
+        controller,
+        closed: false,
+        close: () => {
+          clearInterval(pingInterval);
+          client.closed = true;
+          clients.delete(client);
+        },
       };
+
+      clients.add(client);
+
+      // Initial hello message
+      controller.enqueue(
+        encoder.encode(`data: ${JSON.stringify({ type: "hello" })}\n\n`)
+      );
+
+      // Start ping
+      pingInterval = setInterval(() => {
+        try {
+          if (!client.closed) {
+            controller.enqueue(encoder.encode(`: ping\n\n`));
+          }
+        } catch (err) {
+          console.warn("Ping enqueue failed. Closing client.", err);
+          client.close();
+        }
+      }, 20000);
+    },
+
+    cancel() {
+      // Cleanup on client disconnect
+      for (const client of clients) {
+        if (!client.closed) {
+          client.close();
+        }
+      }
     },
   });
 
   return new Response(stream, {
+    status: 200,
     headers: {
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache, no-transform",

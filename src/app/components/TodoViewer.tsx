@@ -9,17 +9,21 @@ export default function TodoViewer() {
   const [etag, setEtag] = React.useState<string | null>(null);
   const [connected, setConnected] = React.useState(false);
 
-  const fetchContent = async () => {
-    const res = await fetch("/api/todo", {
-      headers: etag ? { "If-None-Match": etag } : {},
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      setContent(data.content ?? "Empty file");
-      setEtag(data.etag ?? null);
+  async function fetchContent() {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const res = await fetch("/api/todo");
+        if (!res.ok) throw new Error(`Failed with ${res.status}`);
+        const data = await res.json();
+        setContent(data.content);
+        setEtag(data.etag);
+        return;
+      } catch (err) {
+        console.error("fetchContent attempt", attempt + 1, "failed:", err);
+        await new Promise((r) => setTimeout(r, 100 * (attempt + 1))); // Backoff
+      }
     }
-  };
+  }
 
   React.useEffect(() => {
     fetchContent();

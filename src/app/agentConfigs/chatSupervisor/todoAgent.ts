@@ -15,7 +15,7 @@ export const getNextFromTodoAgent = tool({
       item: {
         type: "string",
         description:
-          "The text of the todo item to add, tick, untick, or remove. Required for all actions except 'list' and 'clear'.",
+          "The text of the todo item to add, tick, untick, or remove. Required for all actions except 'list' and 'clear'. Note this is just the string, and does not include the - [ ] portion",
       },
       index: {
         type: "integer",
