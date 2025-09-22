@@ -13,6 +13,35 @@ async function readTodoFile(): Promise<string[]> {
   }
 }
 
+// At the top:
+import { NextResponse } from "next/server";
+
+export async function GET(_req: NextRequest) {
+  try {
+    const content = await fs.readFile(filePath, "utf-8");
+    const stat = await fs.stat(filePath);
+    const etag = `"${stat.size}-${stat.mtimeMs}"`;
+
+    return new NextResponse(
+      JSON.stringify({ content, mtimeMs: stat.mtimeMs, etag }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "no-store",
+          ETag: etag,
+          "X-Todo-MtimeMs": String(stat.mtimeMs),
+        },
+      }
+    );
+  } catch (err) {
+    return new NextResponse(
+      JSON.stringify({ error: "Could not read todo.md" }),
+      { status: 500 }
+    );
+  }
+}
+
 async function writeTodoFile(lines: string[]) {
   await fs.writeFile(filePath, lines.join("\n"), "utf-8");
 }
