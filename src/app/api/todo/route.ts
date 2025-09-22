@@ -20,10 +20,14 @@ export async function GET(_req: NextRequest) {
   try {
     const content = await fs.readFile(filePath, "utf-8");
     const stat = await fs.stat(filePath);
-    const etag = `"${stat.size}-${stat.mtimeMs}"`;
+    const etag = `"${stat.size}-${Math.floor(stat.mtimeMs)}"`; // safer ETag
 
     return new NextResponse(
-      JSON.stringify({ content, mtimeMs: stat.mtimeMs, etag }),
+      JSON.stringify({
+        content,
+        mtimeMs: stat.mtimeMs,
+        etag,
+      }),
       {
         status: 200,
         headers: {
@@ -35,6 +39,7 @@ export async function GET(_req: NextRequest) {
       }
     );
   } catch (err) {
+    console.error("GET /api/todo failed:", err);
     return new NextResponse(
       JSON.stringify({ error: "Could not read todo.md" }),
       { status: 500 }
@@ -50,46 +55,76 @@ export async function POST(req: NextRequest) {
   const { action, item, index } = await req.json();
   let todos = await readTodoFile();
 
+  const findItemIndex = (): number => {
+    if (item) {
+      const target = item.trim().toLowerCase();
+      const i = todos.findIndex((line) => line.toLowerCase().includes(target));
+      if (i !== -1) return i;
+    }
+    if (typeof index === "number" && index >= 1 && index <= todos.length) {
+      return index - 1;
+    }
+    return -1;
+  };
+
   switch (action) {
-    case "list":
+    case "list": {
       if (todos.length === 0) {
         return Response.json({ message: "Your todo list is empty." });
       }
       const formatted = todos.map((line, i) => `${i + 1}. ${line}`).join("\n");
       return Response.json({ message: `Here's your todo list:\n${formatted}` });
+    }
 
-    case "add":
+    case "add": {
       if (!item || item.trim() === "") {
         return Response.json({ message: "You must provide an item to add." });
       }
       todos.push(`- [ ] ${item.trim()}`);
       await writeTodoFile(todos);
       return Response.json({ message: `Added: "${item.trim()}"` });
+    }
 
-    case "toggle":
-      if (typeof index !== "number" || index < 1 || index > todos.length) {
-        return Response.json({ message: "Invalid item number." });
+    case "tick": {
+      const i = findItemIndex();
+      if (i === -1) {
+        return Response.json({ message: `Could not find item to tick.` });
       }
-      const line = todos[index - 1];
-      if (line.includes("[ ]")) {
-        todos[index - 1] = line.replace("[ ]", "[x]");
-      } else if (line.includes("[x]")) {
-        todos[index - 1] = line.replace("[x]", "[ ]");
+      if (todos[i].startsWith("- [ ]")) {
+        todos[i] = todos[i].replace("- [ ]", "- [x]");
+        await writeTodoFile(todos);
+        return Response.json({ message: `Ticked: "${todos[i]}"` });
       }
-      await writeTodoFile(todos);
-      return Response.json({ message: `Toggled item ${index}` });
+      return Response.json({ message: `Item was already ticked.` });
+    }
 
-    case "remove":
-      if (typeof index !== "number" || index < 1 || index > todos.length) {
-        return Response.json({ message: "Invalid item number." });
+    case "untick": {
+      const i = findItemIndex();
+      if (i === -1) {
+        return Response.json({ message: `Could not find item to untick.` });
       }
-      const removed = todos.splice(index - 1, 1)[0];
+      if (todos[i].startsWith("- [x]")) {
+        todos[i] = todos[i].replace("- [x]", "- [ ]");
+        await writeTodoFile(todos);
+        return Response.json({ message: `Unticked: "${todos[i]}"` });
+      }
+      return Response.json({ message: `Item was already unticked.` });
+    }
+
+    case "remove": {
+      const i = findItemIndex();
+      if (i === -1) {
+        return Response.json({ message: `Could not find item to remove.` });
+      }
+      const removed = todos.splice(i, 1)[0];
       await writeTodoFile(todos);
       return Response.json({ message: `Removed: "${removed}"` });
+    }
 
-    case "clear":
+    case "clear": {
       await writeTodoFile([]);
       return Response.json({ message: "Todo list cleared." });
+    }
 
     default:
       return Response.json({ message: "Invalid action." });

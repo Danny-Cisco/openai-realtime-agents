@@ -3,7 +3,7 @@ import "./globals.css";
 import "./lib/envSetup";
 
 export const metadata: Metadata = {
-  title: "Realtime API Agents",
+  title: "✌️👽✌️ — GPT-Realtime",
   description: "A demo app from OpenAI.",
 };
 

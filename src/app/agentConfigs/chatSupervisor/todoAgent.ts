@@ -3,23 +3,24 @@ import { tool } from "@openai/agents/realtime";
 export const getNextFromTodoAgent = tool({
   name: "getNextFromTodoAgent",
   description:
-    "Personal to-do manager for Danny. Can read, add, toggle, remove, or clear markdown checklist items. use - [ ] or - [x] as GFM standard",
+    "Personal to-do manager for Danny. Can read, add, tick, untick, remove, or clear markdown checklist items. Uses GFM checkboxes (- [ ] or - [x]).",
   parameters: {
     type: "object",
     properties: {
       action: {
         type: "string",
-        enum: ["list", "add", "toggle", "remove", "clear"],
+        enum: ["list", "add", "tick", "untick", "remove", "clear"],
+        description: "What action to perform on the todo list.",
       },
       item: {
         type: "string",
         description:
-          "The text of the item to add (only for action = add). Ignored otherwise.",
+          "The text of the todo item to add, tick, untick, or remove. Required for all actions except 'list' and 'clear'.",
       },
       index: {
         type: "integer",
         description:
-          "The 1-based index of the item to toggle or remove (only for action = toggle or remove).",
+          "The 1-based index of the item to act on. Optional fallback for tick, untick, or remove if item text is ambiguous or unavailable.",
       },
     },
     required: ["action"],
@@ -33,6 +34,8 @@ export const getNextFromTodoAgent = tool({
     });
 
     const data = await res.json();
-    return { nextResponse: data.message || "Done." };
+    return {
+      nextResponse: data.message || "Done.",
+    };
   },
 });
