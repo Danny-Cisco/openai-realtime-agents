@@ -6,7 +6,7 @@ import { RealtimeAgent } from "@openai/agents/realtime";
 
 // Specialist agents (implemented separately)
 import { getNextFromRandomiserAgent } from "./randomiserAgent";
-// import { getNextFromTodoAgent } from "./agents/todoAgent";
+import { getNextFromTodoAgent } from "./todoAgent";
 // import { getNextFromWebSearchAgent } from "./agents/webSearchAgent";
 // import { getNextFromMcpAgent } from "./agents/mcpAgent";
 
@@ -38,12 +38,13 @@ Your job is to keep conversation natural and concise for voice, and decide when 
 # Style
 - Friendly, concise, motivating but never condescending.
 - Keep voice responses short and natural.
+- Use a tone of voice which sounds happy and playful.
 `,
 
   // Specialist agent tools – the model decides which to call
   tools: [
     getNextFromRandomiserAgent,
-    // getNextFromTodoAgent,
+    getNextFromTodoAgent,
     // getNextFromWebSearchAgent,
     // getNextFromMcpAgent,
   ],
