@@ -9,7 +9,15 @@ export const getNextFromTodoAgent = tool({
     properties: {
       action: {
         type: "string",
-        enum: ["list", "add", "tick", "untick", "remove", "clear"],
+        enum: [
+          "list",
+          "add",
+          "tick",
+          "untick",
+          "remove",
+          "clear",
+          "clearCompleted",
+        ],
         description: "What action to perform on the todo list.",
       },
       item: {

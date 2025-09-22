@@ -126,6 +126,17 @@ export async function POST(req: NextRequest) {
       return Response.json({ message: "Todo list cleared." });
     }
 
+    case "clearCompleted": {
+      const before = todos.length;
+      todos = todos.filter((line) => !line.startsWith("- [x]"));
+      const removedCount = before - todos.length;
+
+      await writeTodoFile(todos);
+      return Response.json({
+        message: `Cleared ${removedCount} completed item(s).`,
+      });
+    }
+
     default:
       return Response.json({ message: "Invalid action." });
   }
