@@ -7,7 +7,7 @@ import { RealtimeAgent } from "@openai/agents/realtime";
 // Specialist agents (implemented separately)
 import { getNextFromRandomiserAgent } from "./randomiserAgent";
 import { getNextFromTodoAgent } from "./todoAgent";
-// import { getNextFromWebSearchAgent } from "./agents/webSearchAgent";
+import { getNextFromWebSearchAgent } from "./webSearchAgent";
 // import { getNextFromMcpAgent } from "./agents/mcpAgent";
 
 export const chatAgent = new RealtimeAgent({
@@ -45,7 +45,7 @@ Your job is to keep conversation natural and concise for voice, and decide when 
   tools: [
     getNextFromRandomiserAgent,
     getNextFromTodoAgent,
-    // getNextFromWebSearchAgent,
+    getNextFromWebSearchAgent,
     // getNextFromMcpAgent,
   ],
 });
