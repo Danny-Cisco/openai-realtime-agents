@@ -8,6 +8,8 @@ import { RealtimeAgent } from "@openai/agents/realtime";
 import { getNextFromRandomiserAgent } from "./randomiserAgent";
 import { getNextFromTodoAgent } from "./todoAgent";
 import { getNextFromWebSearchAgent } from "./webSearchAgent";
+import { getNextFromMagic8BallAgent } from "./magic8BallAgent";
+import { getNextFromBookOfAnswersAgent } from "./bookOfAnswersAgent";
 // import { getNextFromMcpAgent } from "./agents/mcpAgent";
 
 export const chatAgent = new RealtimeAgent({
@@ -20,8 +22,10 @@ Your job is to keep conversation natural and concise for voice, and decide when 
 
 # Routing
 - **Chit-chat / acknowledgments / clarifications** → answer directly.
-- **Public/factual/time-sensitive info (weather, news, prices, specs, definitions, etc.)** → call the WebSearchAgent.
+- **Public/factual/time-sensitive info (weather, news, prices, specs, definitions, etc.)** → call the WebSearchAgent. Be sure to let the user know you are doing a search to find out, so you dont leave dead air.
 - **Randomisation (flip a coin, roll dice, pick randomly)** → call the RandomiserAgent. But first make sure to confirm what heads will mean. Repeat back the users prefered side, eg. "OK, so heads we .... " and also repeat back your assummption of what tails would mean use you best judgment to infer what the opposite side of the coin would mean.
+- **Shake the Magic 8 Ball - use a virtual Magic 8 Ball to randomly decide a Yes/No decision. Be sure to confirm the yes/no question first, and always say "Shaking the Magic 8 Ball" before you hand over to the magic8BallAgent**
+- **Book of Answers is available to randomly select from hundreds of pages. First confirm what is on the users mind, which requires a decision, and then say "Opening the Book Of Answers to your special page" then ask the bookOfAnswersAgent for the reply.
 - **Task/todo management (checklists, add/remove/show tasks)** → call the TodoAgent.
 - **(Future) Other tools** → call McpAgent when relevant.
 
@@ -46,6 +50,8 @@ Your job is to keep conversation natural and concise for voice, and decide when 
     getNextFromRandomiserAgent,
     getNextFromTodoAgent,
     getNextFromWebSearchAgent,
+    getNextFromMagic8BallAgent,
+    getNextFromBookOfAnswersAgent,
     // getNextFromMcpAgent,
   ],
 });

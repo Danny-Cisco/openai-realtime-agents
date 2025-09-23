@@ -454,7 +454,7 @@ function App() {
           </div>
         </div>
         <div className="flex items-center">
-          <label className="flex items-center text-base gap-1 mr-2 font-medium">
+          {/* <label className="flex items-center text-base gap-1 mr-2 font-medium">
             Scenario
           </label>
           <div className="relative inline-block">
@@ -478,7 +478,7 @@ function App() {
                 />
               </svg>
             </div>
-          </div>
+          </div> */}
 
           {agentSetKey && (
             <div className="flex items-center ml-6">

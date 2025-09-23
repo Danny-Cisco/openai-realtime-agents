@@ -59,7 +59,7 @@ function BottomToolbar({
   }
 
   return (
-    <div className="p-4 flex flex-row items-center justify-center gap-x-8">
+    <div className="p-4 flex ml-40 flex-row items-center justify-start gap-x-8">
       <button
         onClick={onToggleConnection}
         className={getConnectionButtonClasses()}
@@ -68,7 +68,7 @@ function BottomToolbar({
         {getConnectionButtonLabel()}
       </button>
 
-      <div className="flex flex-row items-center gap-2">
+      {/* <div className="flex flex-row items-center gap-2">
         <input
           id="push-to-talk"
           type="checkbox"
@@ -97,9 +97,9 @@ function BottomToolbar({
         >
           Talk
         </button>
-      </div>
+      </div> */}
 
-      <div className="flex flex-row items-center gap-1">
+      {/* <div className="flex flex-row items-center gap-1">
         <input
           id="audio-playback"
           type="checkbox"
@@ -114,9 +114,9 @@ function BottomToolbar({
         >
           Audio playback
         </label>
-      </div>
+      </div> */}
 
-      <div className="flex flex-row items-center gap-2">
+      {/* <div className="flex flex-row items-center gap-2">
         <input
           id="logs"
           type="checkbox"
@@ -127,11 +127,8 @@ function BottomToolbar({
         <label htmlFor="logs" className="flex items-center cursor-pointer">
           Logs
         </label>
-      </div>
-
-      <div className="flex flex-row items-center gap-2">
-        <div>Codec:</div>
-        {/*
+      </div> */}
+      {/*
           Codec selector – Lets you force the WebRTC track to use 8 kHz 
           PCMU/PCMA so you can preview how the agent will sound 
           (and how ASR/VAD will perform) when accessed via a 
@@ -139,6 +136,9 @@ function BottomToolbar({
           which our App-level logic picks up and applies via a WebRTC monkey
           patch (see codecPatch.ts).
         */}
+      {/* <div className="flex flex-row items-center gap-2">
+        <div>Codec:</div>
+        
         <select
           id="codec-select"
           value={codec}
@@ -149,7 +149,7 @@ function BottomToolbar({
           <option value="pcmu">PCMU (8 kHz)</option>
           <option value="pcma">PCMA (8 kHz)</option>
         </select>
-      </div>
+      </div> */}
     </div>
   );
 }
